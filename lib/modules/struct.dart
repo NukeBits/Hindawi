@@ -10,7 +10,7 @@ class Book{
   int    id;
   String title;
   String url;
-  String cover_url;
+  String coverUrl;
 
 
 
@@ -21,7 +21,7 @@ class Book{
   String? pdf;      
   String? kfx; 
   String? epub;
-  String? words;
+  int     words;
 
 
 
@@ -31,14 +31,14 @@ class Book{
     required this.id,
     required this.title,
     required this.url, 
-    required this.cover_url,
+    required this.coverUrl,
 
 
     this.content,
     this.pdf,
     this.kfx,
     this.epub,
-    this.words,
+    this.words=0,
     this.authors = const <String>[],
     this.tags    = const <String>[],
   });
