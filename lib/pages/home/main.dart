@@ -115,7 +115,8 @@ class _HomePageState extends State<HomePage> {
   void _startUpdate() async{
     if (_updating) return;
     books.clear();
-    _fetched  = false;
+    _fetched = false;
+    noMore   = false;
 
     UpdateManager(trigger:_trackUpdate).resources();
     setState(() {
@@ -134,6 +135,7 @@ class _HomePageState extends State<HomePage> {
         _updateInfo = null;
         _updating   = false;
         page        = 1;
+        
       });
       return ;
     }
