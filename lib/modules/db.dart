@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 
 
 const bookTableName = 'books';
+const fetchLimit    = 10;
 
 
 class BookDB {
@@ -96,25 +97,34 @@ class BookDB {
 
   Future<Iterable<Book>> getBooks() async{
     final db     = await  database;
-    return (await db.query(bookTableName)).reversed.map(
-      (Map<String,dynamic> bkMap) => Book(
-        id      : bkMap['id']!,
-        title   : bkMap['title']!,
-        url     : bkMap['url']!,
-        coverUrl: bkMap['cover']!,
-
-        authors : bkMap['authors']!.split(":"), 
-        tags    : bkMap['tags']!.split(":"),
-        content : bkMap['content'],
+    return (await db.query(bookTableName)).reversed.map(_map2Book);
+  }
 
 
-        pdf : bkMap['pdf'],
-        epub: bkMap['epub'],
-        kfx : bkMap['kfx'], 
+  Future<List<Book>> getOffSet(int page) async{
+    final db = await database;
+    return (await db.query(bookTableName, offset: page*fetchLimit, limit: fetchLimit)).map(_map2Book).toList();
+  }
 
-      )
+
+  Book _map2Book(Map<String,dynamic> bkMap){
+    return Book(
+			id      : bkMap['id']!,
+			title   : bkMap['title']!,
+			url     : bkMap['url']!,
+			coverUrl: bkMap['cover']!,
+			
+			authors : bkMap['authors']!.split(":"), 
+			tags    : bkMap['tags']!.split(":"),
+			content : bkMap['content'],
+			
+			
+			pdf : bkMap['pdf'],
+			epub: bkMap['epub'],
+			kfx : bkMap['kfx'], 
 
     );
+
   }
 
 
