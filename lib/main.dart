@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hindawi/pages/home/main.dart';  
+import 'package:hindawi/utils/config.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await config();
   runApp(const MyApp());
+
+
 }
 
 class MyApp extends StatelessWidget {
@@ -14,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const Center(child: Text('hello mohammed'),),
+      home: HomePage(),
     );
   }
 }
