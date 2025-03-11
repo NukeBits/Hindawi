@@ -4,6 +4,8 @@ import 'package:hindawi/modules/struct.dart';
 import 'package:hindawi/widgets/book2row.dart';
 import 'package:hindawi/modules/update_manager.dart';
 
+import 'widgets.dart' show EmptyDataBaseMessage, UpdateReportWidget;
+
 
 
 const waitingWidget = Padding(
@@ -50,7 +52,7 @@ class _HomePageState extends State<HomePage> {
 
 
   bool _updating  = false;
-  Map<String,int>? _updateInfo;
+  Map<String,int>? _updateReport;
   
 
 
@@ -70,25 +72,11 @@ class _HomePageState extends State<HomePage> {
       ),
 
 
-      body:(!_updating)?RefreshIndicator(
-      onRefresh: () async{_startUpdate();},
-        child: (page==2 && books.isEmpty && _fetched)?Center(
-			    child: Column(
-			      mainAxisSize: MainAxisSize.min,
-			      children: [
-			        const Text(
-			          "try to fetch new books", 
-			          style: TextStyle(
-			            color: Colors.grey,
-			          ),
-			        ),
-			        ElevatedButton(
-			          onPressed: (){_startUpdate();},
-			          child    : Text("fetch"),
-			        ),
-			      ],
-			    )
-			  ):ListView.builder(
+      body:(_updating)?UpdateReportWidget(updateReport: _updateReport):
+      RefreshIndicator(
+        onRefresh: () async{_startUpdate();},
+        // check if there is no books in db.  
+        child: (books.isEmpty && _fetched)?EmptyDataBaseMessage(action:_startUpdate):ListView.builder(
           controller: controller,
           itemBuilder:(context, index){
             if(index<books.length) return book2row(books[index]);
@@ -96,7 +84,7 @@ class _HomePageState extends State<HomePage> {
           },
           itemCount: books.length+1,
         ),
-      ):genUpdateWidget(_updateInfo),
+      ),
     );
   }
 
@@ -125,16 +113,16 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-  void _trackUpdate(Map<String,int> updateInfo) async{
+  void _trackUpdate(Map<String,int> updateReport) async{
     setState(() {
-      _updateInfo = updateInfo;
+      _updateReport = updateReport;
     });
-    if (updateInfo['done']!=null && updateInfo['books']==updateInfo['loaded-books']){
+    if (updateReport['done']!=null && updateReport['books']==updateReport['loaded-books']){
       await Future.delayed(Duration(milliseconds:1650)); 
       setState(() {
-        _updateInfo = null;
-        _updating   = false;
-        page        = 1;
+        _updateReport = null;
+        _updating     = false;
+        page          = 1;
         
       });
       return ;
@@ -161,56 +149,4 @@ class _HomePageState extends State<HomePage> {
 
 
 
-Widget genUpdateWidget(Map<String,int>? updateInfo){
-  if (updateInfo==null)return Container();
-  const col2 = Column(
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children:[
-      Text('كتب جديدة'), // New Books
-      Text('إجمالي الطلبات'), // Total Req
-      Text('الصفحات'), // Pages    
-    ]
-  );
-  
-  final total = updateInfo["pages"]! + updateInfo["new-books"]!*2;
-  final col1  = Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text('${updateInfo["new-books"]}'),
-      Text('${total}'),
-      Text('${updateInfo["pages"]}')
-    ]
-  );
 
-
-  return Center(
-    child: Column(
-      mainAxisSize:MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 100,
-          child:LinearProgressIndicator(
-            value:(updateInfo['books']==0)?0:updateInfo['loaded-books']!/updateInfo['books']!,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-            backgroundColor: Colors.grey,
-          )
-        ),
-        Row(
-          mainAxisSize:MainAxisSize.min,
-          children: [
-            col1,
-            Column(
-              children: List.generate(
-                3, (int) => Padding(
-                  padding: EdgeInsets.symmetric(horizontal:4),
-                  child:Text(":")
-                )
-              ),
-            ),
-            col2,
-          ],
-        )
-      ],
-    ),
-  );
-}

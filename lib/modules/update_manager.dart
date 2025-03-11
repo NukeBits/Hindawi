@@ -16,7 +16,7 @@ class UpdateManager{
 
   
   List<Book>      _books = [];
-  Map<String,int> _info  = {
+  Map<String,int> _reportMap  = {
     "pages"       :0,
     "books"       :0,
     "loaded-books":0,
@@ -43,7 +43,7 @@ class UpdateManager{
       final html  = (await http.get(url)).body;
       final scrapedBooks = scrp.AllBooksPage(html).books();
 
-      _info['pages'] = _info['pages']! + 1;
+      _reportMap['pages'] = _reportMap['pages']! + 1;
       _report();
 
       
@@ -60,7 +60,7 @@ class UpdateManager{
       }
     }
     _insertBooks();
-    _info['done'] = pageLimit;
+    _reportMap['done'] = pageLimit;
     _report();
 
   }
@@ -68,12 +68,12 @@ class UpdateManager{
 
   void _insertBooks() async{
     final db       = BookDB.instance;
-    _info['books'] = _books.length;
+    _reportMap['books'] = _books.length;
     for (Book bk in _books.reversed){
-      _info['loaded-books'] = _info['loaded-books']! + 1;
+      _reportMap['loaded-books'] = _reportMap['loaded-books']! + 1;
       if(!(await db.bookExists(bk.id))){
         final html   = (await http.get(Uri.parse(bk.url))).body;
-        _info['new-books'] = _info['new-books']! + 1;
+        _reportMap['new-books'] = _reportMap['new-books']! + 1;
         final fullBk = scrp.BookPage(html).book(bk);
         db.addBook(fullBk);
         await DM!.downloadCover(fullBk.id, fullBk.coverUrl);
@@ -84,7 +84,7 @@ class UpdateManager{
   }
 
   void _report() async{
-    if(trigger!=null) trigger!(_info);
+    if(trigger!=null) trigger!(_reportMap);
   }
 }
 
