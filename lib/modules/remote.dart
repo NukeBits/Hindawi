@@ -2,17 +2,18 @@ import 'db.dart';
 import 'struct.dart';
 import 'scraper.dart' as scrp;
 import 'package:http/http.dart' as http;
+import 'package:hindawi/utils/fetch_page.dart';
 
 
 
 
 
 
-int page = 1;
 
   
 
 Future<bool> fetch() async{
+  int   page     = await LastPageNumber.get();
   final db       = BookDB.instance;
   bool  foundNew = false; // new books.
 
@@ -37,7 +38,7 @@ Future<bool> fetch() async{
   for (Book b in remoteBooks){
     db.addBook(b, sortNum--);
   }
-  page++;
+  LastPageNumber.set(page+1);
 
   
 
