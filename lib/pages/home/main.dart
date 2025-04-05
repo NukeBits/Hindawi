@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hindawi/modules/db.dart';
 import 'package:hindawi/modules/struct.dart';
 import 'package:hindawi/widgets/book2row.dart';
-import 'package:hindawi/modules/update_manager.dart';
+import 'package:hindawi/modules/remote.dart' as Remote;
 
-import 'widgets.dart' show EmptyDataBaseMessage, UpdateReportWidget;
+
+import 'widgets.dart' show EmptyDataBaseMessage;
 
 
 
@@ -13,7 +14,7 @@ const waitingWidget = Padding(
   child  : Center(child: const CircularProgressIndicator(),),
 );
 
-
+// is not reachable yet. 
 const endWidget = Padding(
   padding: const EdgeInsets.symmetric(vertical: 15),
   child  : Center(
@@ -44,16 +45,13 @@ class _HomePageState extends State<HomePage> {
 
 
   final controller = ScrollController();
-  int   page       = 1;
+  int   page       = 0;
   bool  noMore     = false;
   bool  _fetched   = false;
 
   List<Book> books = [];
 
-
-  bool _updating  = false;
-  Map<String,int>? _updateReport;
-  
+ 
 
 
 
@@ -62,21 +60,20 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (page==1) {
-      fetchBooksDB();
+    if (page==0) {
+      localFetch();
     }
     return Scaffold(
       appBar: AppBar(
-        title:Text("${page}"),
+        title:Text("$page"),
         centerTitle: true,
       ),
 
 
-      body:(_updating)?UpdateReportWidget(updateReport: _updateReport):
-      RefreshIndicator(
-        onRefresh: () async{_startUpdate();},
+      body:RefreshIndicator(
+        onRefresh: () async{},
         // check if there is no books in db.  
-        child: (books.isEmpty && _fetched)?EmptyDataBaseMessage(action:_startUpdate):ListView.builder(
+        child: (books.isEmpty && _fetched)?EmptyDataBaseMessage(action:emptyDBAction):ListView.builder(
           controller: controller,
           itemBuilder:(context, index){
             if(index<books.length) return book2row(books[index]);
@@ -87,55 +84,44 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+  
+
+  // this function called the first time ever launching the app.
+  void emptyDBAction() async{
+    await Remote.fetch();
+    setState(() {
+      page = 0;
+      _fetched = noMore = false;
+    });
+  }
 
 
-  void fetchBooksDB() async{
+  void remoteFetch() async{
+    await Remote.fetch();
+    final bks = await db.getOffSet(page-1);
+
+    setState(() {
+      books += bks;
+    });
+  }
+
+
+  void localFetch() async{
     List<Book> bks = (await db.getOffSet(page++));
-    if (bks.length == 0) noMore = true;
+    if (bks.length == 0) remoteFetch();
     setState(() {
       books += bks;
     });
     _fetched = true;
           
   }
-
-
-  void _startUpdate() async{
-    if (_updating) return;
-    books.clear();
-    _fetched = false;
-    noMore   = false;
-
-    UpdateManager(trigger:_trackUpdate).resources();
-    setState(() {
-      _updating = true;
-    });
-  }
-
-
-  void _trackUpdate(Map<String,int> updateReport) async{
-    setState(() {
-      _updateReport = updateReport;
-    });
-    if (updateReport['done']!=null && updateReport['books']==updateReport['loaded-books']){
-      await Future.delayed(Duration(milliseconds:1650)); 
-      setState(() {
-        _updateReport = null;
-        _updating     = false;
-        page          = 1;
-        
-      });
-      return ;
-    }
-    
-  }
-
+  
 
   @override
   void initState(){
     super.initState();
     controller.addListener((){
-      if(!noMore && controller.position.maxScrollExtent==controller.offset) fetchBooksDB();
+      if(!noMore && controller.position.maxScrollExtent==controller.offset)localFetch();
     });
   }
 
