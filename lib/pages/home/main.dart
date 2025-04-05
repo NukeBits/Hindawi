@@ -48,7 +48,6 @@ class _HomePageState extends State<HomePage> {
   bool  fetchLock  = false;
   int   page       = 0;
   bool  noMore     = false;
-  bool  _fetched   = false;
 
   List<Book> books = [];
 
@@ -70,7 +69,7 @@ class _HomePageState extends State<HomePage> {
       body:RefreshIndicator(
         onRefresh: () async{},
         // check if there is no books in db.  
-        child: (books.isEmpty && _fetched)?EmptyDataBaseMessage(action:emptyDBAction):ListView.builder(
+        child: (books.isEmpty && !fetchLock)?EmptyDataBaseMessage():ListView.builder(
           controller: controller,
           itemBuilder:(context, index){
             if(index<books.length) return book2row(books[index]);
@@ -80,17 +79,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-  
-
-  // this function called the first time ever launching the app.
-  void emptyDBAction() async{
-    await Remote.fetch();
-    setState(() {
-      page = 0;
-      _fetched = noMore = false;
-    });
-  }
+  } 
 
 
   void remoteFetch() async{
@@ -107,6 +96,7 @@ class _HomePageState extends State<HomePage> {
 
   void localFetch() async{
     List<Book> bks = (await db.getOffSet(page++));
+    // if the fetch from the db was empty, it will try the remote one.
     if (bks.length == 0){ 
       remoteFetch();
       return;
@@ -114,7 +104,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       books += bks;
     });
-    _fetched = true;
     fetchLock = false;
 
           
