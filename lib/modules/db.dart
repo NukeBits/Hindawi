@@ -137,8 +137,8 @@ class BookDB {
 			url     : bkMap['url']!,
 			coverUrl: bkMap['cover']!,
 			
-			authors : bkMap['authors']!.split(":"), 
-			tags    : bkMap['tags']!.split(":"),
+			authors : (bkMap['authors']!.isEmpty)?[]:bkMap['authors']!.split(":"), 
+			tags    : (bkMap['tags']!.isEmpty)?[]:bkMap['tags']!.split(":"),
 			content : bkMap['content'],
 			
 			
