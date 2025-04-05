@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:hindawi/modules/struct.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -49,7 +48,9 @@ class BookDB {
             kfx       TEXT,
             epub      TEXT,
 
-            words     INTEGER
+            words     INTEGER,
+            
+            sort      INTEGER
 
           )
         ''');
@@ -61,7 +62,7 @@ class BookDB {
   }
 
 
-  void addBook(Book bk) async{
+  void addBook(Book bk, int bookSort) async{
     final db = await database;
     await db.insert(
       bookTableName,
@@ -78,6 +79,8 @@ class BookDB {
         "pdf"    :  bk.pdf,
         "kfx"    :  bk.kfx,
         "epub"   :  bk.epub,
+        
+        "sort"   :  bookSort
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -95,6 +98,21 @@ class BookDB {
   }
 
 
+  Future<int> smallestSortNum() async{
+    final db = await database;
+    int num = 0;
+    while (true){
+      final result = await db.query(
+        bookTableName, 
+        where: 'sort = ?',
+        whereArgs: [num,]
+      );
+      if (result.isEmpty) return num;
+      num--;
+    }
+  }
+
+
   Future<Iterable<Book>> getBooks() async{
     final db     = await  database;
     return (await db.query(bookTableName)).reversed.map(_map2Book);
@@ -103,7 +121,12 @@ class BookDB {
 
   Future<List<Book>> getOffSet(int page) async{
     final db = await database;
-    return (await db.query(bookTableName, offset: page*fetchLimit, limit: fetchLimit)).map(_map2Book).toList();
+    return (await db.query(
+      bookTableName,
+      offset: page*fetchLimit,
+      limit: fetchLimit,
+      orderBy: 'sort DESC',
+    )).map(_map2Book).toList();
   }
 
 
