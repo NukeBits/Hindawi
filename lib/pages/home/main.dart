@@ -45,6 +45,7 @@ class _HomePageState extends State<HomePage> {
 
 
   final controller = ScrollController();
+  bool  fetchLock  = false;
   int   page       = 0;
   bool  noMore     = false;
   bool  _fetched   = false;
@@ -52,10 +53,6 @@ class _HomePageState extends State<HomePage> {
   List<Book> books = [];
 
  
-
-
-
-
 
 
   @override
@@ -103,16 +100,23 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       books += bks;
     });
+
+    fetchLock = false;
   }
 
 
   void localFetch() async{
     List<Book> bks = (await db.getOffSet(page++));
-    if (bks.length == 0) remoteFetch();
+    if (bks.length == 0){ 
+      remoteFetch();
+      return;
+    }
     setState(() {
       books += bks;
     });
     _fetched = true;
+    fetchLock = false;
+
           
   }
   
@@ -121,7 +125,12 @@ class _HomePageState extends State<HomePage> {
   void initState(){
     super.initState();
     controller.addListener((){
-      if(!noMore && controller.position.maxScrollExtent==controller.offset)localFetch();
+      if(!noMore && controller.position.maxScrollExtent==controller.offset){
+        if(!fetchLock){
+          fetchLock = true;
+          localFetch();
+        }
+      }
     });
   }
 
