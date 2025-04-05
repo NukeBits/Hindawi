@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hindawi/modules/struct.dart';
-import 'package:hindawi/glob.dart';
-import 'package:flutter_svg/svg.dart';
-import 'dart:io';
+import 'package:hindawi/widgets/cover_loader.dart';
 
 
 
@@ -23,10 +21,7 @@ Widget book2row(Book bk){
 	          Flexible(
 	            child:SizedBox(
                 width: 107,
-                child: SvgPicture.file(
-                  File("$documPath/covers/${bk.id}.svg"), 
-                  fit: BoxFit.cover,
-                ),
+                child: CoverLoader(book: bk),
               ),
             )  
 	          
