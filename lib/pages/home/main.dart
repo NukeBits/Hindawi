@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hindawi/modules/db.dart';
 import 'package:hindawi/modules/struct.dart';
-import 'package:hindawi/widgets/book2row.dart';
 import 'package:hindawi/modules/remote.dart' as Remote;
+import 'package:hindawi/widgets/bookshelf.dart';
 
 
 import 'widgets.dart' show EmptyDataBaseMessage;
@@ -69,14 +69,7 @@ class _HomePageState extends State<HomePage> {
       body:RefreshIndicator(
         onRefresh: () async{},
         // check if there is no books in db.  
-        child: (books.isEmpty && !fetchLock)?EmptyDataBaseMessage():ListView.builder(
-          controller: controller,
-          itemBuilder:(context, index){
-            if(index<books.length) return book2row(books[index]);
-            else return (noMore)?endWidget:waitingWidget;
-          },
-          itemCount: books.length+1,
-        ),
+        child: (books.isEmpty && !fetchLock)?EmptyDataBaseMessage():BookShelf(books: books, controller: controller),
       ),
     );
   } 
@@ -114,7 +107,7 @@ class _HomePageState extends State<HomePage> {
   void initState(){
     super.initState();
     controller.addListener((){
-      if(!noMore && controller.position.maxScrollExtent==controller.offset){
+      if(controller.position.maxScrollExtent==controller.offset){
         if(!fetchLock){
           fetchLock = true;
           localFetch();

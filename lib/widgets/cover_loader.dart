@@ -13,6 +13,8 @@ final imageLoadingAnimation = Stack(
     Image.asset(
       'assets/default.png',
       fit: BoxFit.cover,
+      height: double.infinity,
+
     ),
     Center(
       child:CircularProgressIndicator(color:Colors.white)
@@ -112,6 +114,7 @@ class _CoverLoaderState extends State<CoverLoader> {
             Image.asset(
               'assets/default.png',
               fit: BoxFit.cover,
+              height:double.infinity,
             ),
             Center(
               child:Icon(Icons.refresh)
