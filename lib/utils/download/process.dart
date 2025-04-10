@@ -1,3 +1,4 @@
+import 'dart:collection';
 
 
 
@@ -7,7 +8,7 @@ class DownloadProcess{
   final String   id;
   final Function action;
 
-  List<Function> _onCompleteCallbacks = []; // this will know the widgets that the process is done executing.
+  Queue<Function> _onCompleteCallbacks = Queue<Function>(); // this will know the widgets that the process is done executing.
 
   // 0: didn't start yet.
   // 1: runing.
@@ -35,10 +36,10 @@ class DownloadProcess{
       _state = 3;
     }
 
-
-    for (Function a in _onCompleteCallbacks){
-      a(); 
+    while (_onCompleteCallbacks.isNotEmpty){
+      _onCompleteCallbacks.removeFirst()();
     }
+    
   }
 
 
