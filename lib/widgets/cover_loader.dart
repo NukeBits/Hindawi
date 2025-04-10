@@ -84,6 +84,9 @@ class _CoverLoaderState extends State<CoverLoader> {
 
     if(!dm.processExists("cover${widget.book.id}"))
       dm.queCover(widget.book, widget.coverFile, imageDownloadCallBack);
+    else if(dm.getProcess("cover${widget.book.id}")!.doneWithErr())
+      dm.queCover(widget.book, widget.coverFile, imageDownloadCallBack);
+
     imgInQueque = true;
     
 

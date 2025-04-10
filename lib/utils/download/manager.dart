@@ -67,7 +67,7 @@ class DownloadManager{
     if(_currentProcess!.isRunning() || _currentProcess!.doneWithoutErr()) return;
     // conditions to start or restart.
     if(_currentProcess!.doneWithErr() || _currentProcess!.isSleep()){
-        if (_currentProcess!.isSleep()) _currentProcess!.addCallBack(starter);
+        _currentProcess!.addCallBack(starter);
         _currentProcess!.start();
     }
     
